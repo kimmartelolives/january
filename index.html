@@ -299,46 +299,38 @@
     const { createClient } = supabase;
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-    // 3. Visitor Logging Logic (Adjusted for PH Time)
-// 3. Visitor Logging Logic (Corrected for PHT)
     async function logVisit() {
-        console.log("🚀 Attempting to log visit...");
-        try {
-            // Fetch IP
-            const response = await fetch('https://api.ipify.org?format=json');
-            const data = await response.json();
-            const visitorIp = data.ip;
+    console.log("🚀 Attempting to log visit...");
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        const visitorIp = data.ip;
 
-            // --- FIXED PH TIMEZONE LOGIC ---
-            // Create a date object for the current moment
-            const now = new Date();
-            
-            // Format the date to PHT string: "YYYY-MM-DD HH:MM:SS"
-            // We use 'sv-SE' locale because it naturally formats to YYYY-MM-DD
-            const phTimeFormatted = now.toLocaleString("sv-SE", { 
-                timeZone: "Asia/Manila" 
-            }).replace(' ', 'T'); // Results in "2026-03-18T16:51:19" (No UTC offset)
+        // --- MANILA TIME STRING ---
+        // This creates "YYYY-MM-DD HH:MM:SS" in Manila time
+        const phTime = new Date().toLocaleString("sv-SE", { 
+            timeZone: "Asia/Manila" 
+        }); 
 
-            // Log to Supabase
-            const { error } = await supabaseClient
-                .from('visitor_logs')
-                .insert([
-                    { 
-                        ip_address: visitorIp, 
-                        user_agent: navigator.userAgent,
-                        created_at: phTimeFormatted // Send the local PH string directly
-                    }
-                ]);
+        const { error } = await supabaseClient
+            .from('visitor_logs')
+            .insert([
+                { 
+                    ip_address: visitorIp, 
+                    user_agent: navigator.userAgent,
+                    created_at: phTime // Sending the raw "sv-SE" string
+                }
+            ]);
 
-            if (error) {
-                console.error('❌ Supabase Error:', error.message);
-            } else {
-                console.log('✅ Visit logged successfully at PH Time:', phTimeFormatted);
-            }
-        } catch (err) {
-            console.error('❌ Critical Error during logging:', err);
+        if (error) {
+            console.error('❌ Supabase Error:', error.message);
+        } else {
+            console.log('✅ Success! Logged at PH Time:', phTime);
         }
+    } catch (err) {
+        console.error('❌ Error:', err);
     }
+}
 
     // 4. Page Load Actions
     window.onload = function() {
