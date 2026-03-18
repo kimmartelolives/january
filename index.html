@@ -3,28 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Anya!</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Cute Letter for Waki</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Great+Vibes&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --bg-color-main: #fce4ec; 
+            --bg-color-alt: #e3f2fd;  
+            --envelope-pink: #ffdae9;
+            --envelope-white: #ffffff;
+            --accent-pink: #ff8fab;
+            --text-color: #5d4037;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        body {
+            background-color: var(--bg-color-main);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(135, 206, 250, 0.4) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, rgba(255, 182, 193, 0.6) 0px, transparent 50%),
+                radial-gradient(at 0% 80%, rgba(221, 160, 221, 0.4) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(255, 239, 186, 0.4) 0px, transparent 50%);
+            
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bg-sparkles {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; overflow: hidden;
+        }
+
+        .bg-element {
+            position: absolute;
+            bottom: -50px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            animation: float-up 6s infinite linear;
+            pointer-events: none;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            10% { opacity: 0.8; }
+            100% { transform: translateY(-110vh) scale(1.5); opacity: 0; }
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .envelope-wrapper {
+            position: relative;
+            width: 450px; 
+            height: 300px; 
+            cursor: pointer;
+            perspective: 1200px;
+            margin-bottom: 20px;
+        }
+
+        .envelope {
+            position: relative;
+            width: 100%; height: 100%;
+            background-color: var(--envelope-pink);
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 15px 45px var(--shadow);
+            z-index: 1;
+        }
+
+        .letter {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 420px; 
+            height: 270px; 
+            background: white;
+            z-index: 2;
+            padding: 25px;
+            box-sizing: border-box;
+            border-radius: 10px;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.8s, box-shadow 0.8s;
+            box-shadow: 0 4px 15px var(--shadow);
+            display: block; 
+            overflow-y: auto; 
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            border: 2px solid #fff5f7;
+        }
+
+        .letter::-webkit-scrollbar { display: none; }
+
+        .letter h3, .letter p, .video-container {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.6s ease-out;
+        }
+
+        .envelope-wrapper.open .letter h3 { opacity: 1; transform: translateY(0); transition-delay: 0.8s; }
+        .envelope-wrapper.open .video-container { opacity: 1; transform: translateY(0); transition-delay: 1.0s; }
+        .envelope-wrapper.open .letter p { opacity: 1; transform: translateY(0); transition-delay: 1.2s; }
+        .envelope-wrapper.open .letter { box-shadow: 0 0 30px rgba(255, 143, 171, 0.3); }
+
+        .letter h3 { 
+            font-family: 'Great Vibes', cursive;
+            color: var(--accent-pink); 
+            margin: 15px 0; 
+            font-size: 32px;
+            text-align: center;
+            font-weight: normal;
+        }
+
+        .letter p { 
+            font-family: 'Dancing Script', cursive;
+            font-size: 19px; 
+            color: var(--text-color); 
+            line-height: 1.6; 
+            margin-bottom: 15px; 
+            text-align: center;
+        }
+
+        /* --- VIDEO CONTAINER WITH SHINE --- */
+        .video-container {
+            position: relative; /* Needed for absolute shine overlay */
+            width: 280px;
+            height: 160px;
+            background: #eee;
+            margin: 0 auto 20px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px var(--shadow);
+            border: 6px solid white; 
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* THE SHINING EFFECT LAYER */
+        .video-shine {
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to right, 
+                rgba(255, 255, 255, 0) 0%, 
+                rgba(255, 255, 255, 0.4) 50%, 
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: skewX(-25deg);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Animation triggers when envelope opens */
+        .envelope-wrapper.open .video-shine {
+            animation: shine 3s infinite;
+            animation-delay: 1.5s;
+        }
+
+        @keyframes shine {
+            0% { left: -150%; }
+            30% { left: 150%; }
+            100% { left: 150%; }
+        }
+
+        .front-pocket {
+            position: absolute; bottom: 0; width: 0; height: 0;
+            border-left: 225px solid transparent;
+            border-right: 225px solid transparent;
+            border-bottom: 150px solid var(--envelope-white);
+            z-index: 4;
+        }
+
+        .front-sides {
+            position: absolute; bottom: 0; width: 0; height: 0;
+            border-top: 150px solid transparent;
+            border-bottom: 150px solid transparent;
+            border-left: 225px solid #f8c9dd;
+            z-index: 3;
+        }
+        
+        .front-sides-right {
+            position: absolute; bottom: 0; right: 0; width: 0; height: 0;
+            border-top: 150px solid transparent;
+            border-bottom: 150px solid transparent;
+            border-right: 225px solid #f8c9dd;
+            z-index: 3;
+        }
+
+        .flap {
+            position: absolute; top: 0; width: 0; height: 0;
+            border-left: 225px solid transparent;
+            border-right: 225px solid transparent;
+            border-top: 160px solid var(--envelope-pink);
+            z-index: 5;
+            transform-origin: top;
+            transition: transform 0.6s ease;
+            filter: drop-shadow(0 4px 4px var(--shadow));
+        }
+
+        .heart {
+            position: absolute; top: 125px; left: 195px;
+            width: 60px; height: 60px;
+            background: var(--accent-pink);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            z-index: 6; font-size: 30px;
+            box-shadow: 0 6px 15px var(--shadow);
+            animation: heart-pulse 2s infinite;
+        }
+
+        @keyframes heart-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+        .envelope-wrapper.open .flap { transform: rotateX(180deg); z-index: 1; }
+        .envelope-wrapper.open .letter { transform: translateY(-200px); z-index: 10; }
+        .envelope-wrapper.open .heart { opacity: 0; transform: scale(0); }
+
+        .instruction {
+            color: var(--accent-pink);
+            background: rgba(255, 255, 255, 0.7);
+            padding: 8px 25px; border-radius: 25px;
+            font-size: 16px; font-weight: bold; margin-top: 30px;
+            box-shadow: 0 4px 10px var(--shadow);
+        }
+    </style>
 </head>
 <body>
 
-    <div class="main-container">
-        <h1>Interactive Anya Forger</h1>
-        
-        <div class="interaction-area">
-            <input type="text" id="userInput" placeholder="Type something for Anya to 'hear'...">
-            <button onclick="anyaReadMind()">Read My Mind</button>
-        </div>
+    <audio id="letterMusic" loop>
+        <source src="written.mp3" type="audio/mpeg">
+    </audio>
 
-        <div class="anya-stage">
-            <div class="thought-bubble" id="thoughtBubble">
-                <p id="anyaThought">...</p>
+    <div class="bg-sparkles" id="bgSparkles"></div>
+
+    <div class="content-wrapper">
+        <div class="envelope-wrapper" id="envelope">
+            <div class="envelope"></div>
+            <div class="flap"></div>
+            <div class="front-pocket"></div>
+            <div class="front-sides"></div>
+            <div class="front-sides-right"></div>
+            
+            <div class="letter">
+                <h3>My Baby January, ✨</h3>
+                
+                <div class="video-container">
+                    <video id="letterVideo" loop muted playsinline>
+                        <source src="baby.mp4" type="video/mp4">
+                    </video>
+                    <div class="video-shine"></div>
+                </div>
+                
+                <p>I hope this cute letter makes you smile today. You are the home I didn't know I was looking for until I found you.</p>
+                <p>I love that we are a team, and I love that I get to walk through life by your side. You are my favorite adventure, my best friend, and the greatest gift I’ve ever received.</p>
+                <p>Thank you for choosing me every single day. I promise to keep choosing you, too. Today, tomorrow, and forever. My future rn. I love you!</p>
+                <p style="font-weight: bold; margin-top: 15px; padding-bottom: 30px; font-family: 'Great Vibes', cursive; font-size: 32px;"> 💖  Always, Martel</p>
             </div>
             
-            <div class="anya-character" id="anyaCharacter" onclick="cycleExpression()"></div>
+            <div class="heart">❤</div>
         </div>
+
+        <p class="instruction">Open me 😉</p>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        const envelope = document.getElementById('envelope');
+        const music = document.getElementById('letterMusic');
+        const video = document.getElementById('letterVideo');
+
+        envelope.addEventListener('click', function() {
+            const isOpen = this.classList.toggle('open');
+            if (isOpen) {
+                music.play();
+                video.play();
+            } else {
+                music.pause();
+                music.currentTime = 0;
+                video.pause();
+                video.currentTime = 0;
+            }
+        });
+
+        const sparkleContainer = document.getElementById('bgSparkles');
+        for (let i = 0; i < 25; i++) {
+            const el = document.createElement('div');
+            el.className = 'bg-element';
+            el.style.width = el.style.height = Math.random() * 20 + 10 + 'px';
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDelay = Math.random() * 5 + 's';
+            el.style.backgroundColor = ['#fff', '#ffdeeb', '#e3f2fd'][Math.floor(Math.random() * 3)];
+            sparkleContainer.appendChild(el);
+        }
+
+   // Initialize Supabase
+const supabaseUrl = 'https://lzjykjlzgtdimblsljrz.supabase.co';
+const supabaseKey = 'sb_publishable_EjGRBCNBIhBMWzH-yJo4tg_kds';
+const { createClient } = supabase; // Get the createClient function from the CDN
+const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+async function logVisit() {
+    try {
+        // 1. Fetch the user's IP address
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        const visitorIp = data.ip;
+
+        // 2. Log it to Supabase table named 'visitor_logs'
+        const { error } = await supabaseClient
+            .from('visitor_logs')
+            .insert([
+                { 
+                    ip_address: visitorIp, 
+                    user_agent: navigator.userAgent 
+                }
+            ]);
+
+        if (error) console.error('Error logging visit:', error.message);
+    } catch (err) {
+        console.error('Failed to log visit:', err);
+    }
+}
+
+// Trigger the log when the page loads
+window.onload = logVisit;
+
+    </script>
 </body>
 </html>

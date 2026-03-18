@@ -1,65 +1,42 @@
-// Map pose names to their horizontal position index (0-4) in the sprite sheet
-const poses = {
-    smile: 0,
-    heh: 1, // The signature smug face
-    shock: 2,
-    bored: 3,
-    cry: 4
-};
+// script.js
+const wrapper = document.querySelector('.wrapper');
+const starsContainer = document.getElementById('stars');
 
-const spriteWidth = 150; // Must match --sprite-width in CSS
-let currentPoseIndex = 0;
+// Toggle the open state
+wrapper.addEventListener('click', () => {
+    wrapper.classList.toggle('open');
+});
 
-const anyaEl = document.getElementById('anyaCharacter');
-const bubbleEl = document.getElementById('thoughtBubble');
-const thoughtEl = document.getElementById('anyaThought');
-const inputEl = document.getElementById('userInput');
-
-// 1. Click Anya to cycle her expressions
-function cycleExpression() {
-    hideThought(); // Hide mind-reading if cycling
-    currentPoseIndex = (currentPoseIndex + 1) % 5;
-    setAnyaPose(currentPoseIndex);
+// Create elegant background twinkles
+for (let i = 0; i < 40; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 4 + 2 + 'px';
+    star.style.width = size;
+    star.style.height = size;
+    star.style.top = Math.random() * 100 + 'vh';
+    star.style.left = Math.random() * 100 + 'vw';
+    star.style.animationDelay = Math.random() * 3 + 's';
+    starsContainer.appendChild(star);
 }
 
-// 2. Button triggers the 'Mind Reading' interaction
-function anyaReadMind() {
-    const text = inputEl.value;
+// Stardust Cursor Effect
+window.addEventListener('mousemove', (e) => {
+    const spark = document.createElement('div');
+    spark.className = 'star';
+    spark.style.width = '4px';
+    spark.style.height = '4px';
+    spark.style.backgroundColor = '#ffc2e2'; // Pink spark
+    spark.style.left = e.clientX + 'px';
+    spark.style.top = e.clientY + 'px';
+    spark.style.filter = 'blur(2px)';
     
-    if (text.length > 0) {
-        // Exaggerated reaction (Shocked!)
-        setAnyaPose(poses.shock);
-        showThought("*Gasp!* (Mental noise!) Anya hears... '" + text.substring(0, 20) + "...'!");
-        
-        // After a delay, switch to the 'Heh' smug face
-        setTimeout(() => {
-            setAnyaPose(poses.heh);
-            showThought("Heh. I knew that.");
-        }, 2000);
+    document.body.appendChild(spark);
 
-    } else {
-        // If input is empty, she gets bored.
-        setAnyaPose(poses.bored);
-        showThought("...Anya is bored. You aren't thinking hard enough.");
-        setTimeout(hideThought, 3000);
-    }
-}
+    spark.animate([
+        { opacity: 1, transform: 'scale(1) translateY(0)' },
+        { opacity: 0, transform: 'scale(0) translateY(20px)' }
+    ], { duration: 1000 });
 
-// Helper: Sets the specific sprite background position
-function setAnyaPose(index) {
-    // Moves the sprite sheet horizontally by multiples of the sprite width
-    const positionX = -(index * spriteWidth);
-    anyaEl.style.backgroundPosition = `${positionX}px 0px`;
-}
-
-function showThought(message) {
-    thoughtEl.textContent = message;
-    bubbleEl.classList.add('active');
-}
-
-function hideThought() {
-    bubbleEl.classList.remove('active');
-}
-
-// Initialize default pose
-setAnyaPose(currentPoseIndex);
+    setTimeout(() => spark.remove(), 1000);
+});
