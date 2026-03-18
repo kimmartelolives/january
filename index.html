@@ -300,6 +300,7 @@
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
     // 3. Visitor Logging Logic (Adjusted for PH Time)
+// 3. Visitor Logging Logic (Corrected for PHT)
     async function logVisit() {
         console.log("🚀 Attempting to log visit...");
         try {
@@ -308,9 +309,15 @@
             const data = await response.json();
             const visitorIp = data.ip;
 
-            // Generate PH Time (GMT+8)
-            const phTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Manila"});
-            const formattedTime = new Date(phTime).toISOString();
+            // --- FIXED PH TIMEZONE LOGIC ---
+            // Create a date object for the current moment
+            const now = new Date();
+            
+            // Format the date to PHT string: "YYYY-MM-DD HH:MM:SS"
+            // We use 'sv-SE' locale because it naturally formats to YYYY-MM-DD
+            const phTimeFormatted = now.toLocaleString("sv-SE", { 
+                timeZone: "Asia/Manila" 
+            }).replace(' ', 'T'); // Results in "2026-03-18T16:51:19" (No UTC offset)
 
             // Log to Supabase
             const { error } = await supabaseClient
@@ -319,14 +326,14 @@
                     { 
                         ip_address: visitorIp, 
                         user_agent: navigator.userAgent,
-                        created_at: formattedTime // Explicitly sending PH-based ISO time
+                        created_at: phTimeFormatted // Send the local PH string directly
                     }
                 ]);
 
             if (error) {
                 console.error('❌ Supabase Error:', error.message);
             } else {
-                console.log('✅ Visit logged successfully (PH Time)!');
+                console.log('✅ Visit logged successfully at PH Time:', phTimeFormatted);
             }
         } catch (err) {
             console.error('❌ Critical Error during logging:', err);
