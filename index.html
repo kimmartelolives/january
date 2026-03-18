@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cute Letter for Waki</title>
+    <title>My January</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Great+Vibes&display=swap" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -316,11 +316,13 @@
         }
 
    // Initialize Supabase
+// Copy and paste this exact block
 const supabaseUrl = 'https://lzjykjlzgtdimblsljrz.supabase.co';
-const supabaseKey = 'sb_publishable_EjGRBCNBIhBMWzH-yJo4tg_kds';
-const { createClient } = supabase; // Get the createClient function from the CDN
-const supabaseClient = createClient(supabaseUrl, supabaseKey);
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6anlramx6Z3RkaW1ibHNsanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjE4MzQsImV4cCI6MjA4OTM5NzgzNH0.SfJIe8TvA1aKaaOg2iegMiNy5SeT-ePNf6jsKLCuur0';
 
+// Ensure 'createClient' is called correctly
+const { createClient } = supabase;
+const supabaseClient = createClient(supabaseUrl, supabaseKey);
 async function logVisit() {
     try {
         // 1. Fetch the user's IP address
