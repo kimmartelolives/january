@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Anya!</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>Interactive Anya Forger</h1>
+        
+        <div class="interaction-area">
+            <input type="text" id="userInput" placeholder="Type something for Anya to 'hear'...">
+            <button onclick="anyaReadMind()">Read My Mind</button>
+        </div>
+
+        <div class="anya-stage">
+            <div class="thought-bubble" id="thoughtBubble">
+                <p id="anyaThought">...</p>
+            </div>
+            
+            <div class="anya-character" id="anyaCharacter" onclick="cycleExpression()"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
