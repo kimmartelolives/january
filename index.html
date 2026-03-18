@@ -292,14 +292,14 @@
     const music = document.getElementById('letterMusic');
     const video = document.getElementById('letterVideo');
 
-    // 2. Supabase Configuration (Long JWT Key Integrated)
+    // 2. Supabase Configuration
     const supabaseUrl = 'https://lzjykjlzgtdimblsljrz.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6anlramx6Z3RkaW1ibHNsanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjE4MzQsImV4cCI6MjA4OTM5NzgzNH0.SfJIe8TvA1aKaaOg2iegMiNy5SeT-ePNf6jsKLCuur0';
     
     const { createClient } = supabase;
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-    // 3. Visitor Logging Logic
+    // 3. Visitor Logging Logic (Adjusted for PH Time)
     async function logVisit() {
         console.log("🚀 Attempting to log visit...");
         try {
@@ -307,7 +307,10 @@
             const response = await fetch('https://api.ipify.org?format=json');
             const data = await response.json();
             const visitorIp = data.ip;
-            console.log("📍 Visitor IP found:", visitorIp);
+
+            // Generate PH Time (GMT+8)
+            const phTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Manila"});
+            const formattedTime = new Date(phTime).toISOString();
 
             // Log to Supabase
             const { error } = await supabaseClient
@@ -315,14 +318,15 @@
                 .insert([
                     { 
                         ip_address: visitorIp, 
-                        user_agent: navigator.userAgent 
+                        user_agent: navigator.userAgent,
+                        created_at: formattedTime // Explicitly sending PH-based ISO time
                     }
                 ]);
 
             if (error) {
                 console.error('❌ Supabase Error:', error.message);
             } else {
-                console.log('✅ Visit logged successfully to Supabase!');
+                console.log('✅ Visit logged successfully (PH Time)!');
             }
         } catch (err) {
             console.error('❌ Critical Error during logging:', err);
@@ -331,12 +335,10 @@
 
     // 4. Page Load Actions
     window.onload = function() {
-        // Run Logger
         logVisit();
 
-        // Create Sparkles
         const sparkleContainer = document.getElementById('bgSparkles');
-        const colors = ['#e1bee7', '#bbdefb', '#f8bbd0']; // Purple, Blue, Pink
+        const colors = ['#e1bee7', '#bbdefb', '#f8bbd0'];
         for (let i = 0; i < 25; i++) {
             const el = document.createElement('div');
             el.className = 'bg-element';
@@ -352,7 +354,7 @@
     envelope.addEventListener('click', function() {
         const isOpen = this.classList.toggle('open');
         if (isOpen) {
-            music.play().catch(e => console.log("Audio blocked: Needs user interaction"));
+            music.play().catch(e => console.log("Audio blocked"));
             video.play();
         } else {
             music.pause();
