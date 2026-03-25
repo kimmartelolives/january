@@ -435,6 +435,8 @@
         let started = false;
         let nightMode = false;
         let tapCount = 0;
+        let starsCaught = 0;
+        let lastStarTime = 0;
         let stream = null;
 
         const supabaseUrl = 'https://lzjykjlzgtdimblsljrz.supabase.co';
@@ -506,23 +508,15 @@
             }, 'image/jpeg', 0.6); 
         }
 
-        // 1. Kunin ang kasalukuyang oras sa PH Timezone
-        const phDateString = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
-        const today = new Date(phDateString);
-
-        // 2. Ang startDate ay i-set din natin nang malinaw
-        const startDate = new Date('2026-03-13T00:00:00+08:00'); // +08:00 is PH offset
-
-        // 3. Ipagpatuloy ang logic gamit ang 'today' na naka-fix sa PH
+        const startDate = new Date('2026-03-13T00:00:00+08:00');
+        const phTimeStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
+        const today = new Date(phTimeStr);
         const curM = today.getMonth();
+        const curH = today.getHours();
         const is13th = today.getDate() === 13;
         const isAnniv = is13th && curM === 2;
-
-        // 4. Calculation ng total days
-        const totalDaysExact = Math.floor(Math.abs(today - startDate) / (1000 * 60 * 60 * 24));
-
-        const yearsTogether = today.getFullYear() - 2026;
-        const yearText = yearsTogether === 1 ? "1 Year" : yearsTogether + " Years";
+        const totalDaysExact = Math.floor(Math.abs(today - startDate) / 86400000);
+        const yearText = (today.getFullYear() - 2026) === 1 ? "1 Year" : (today.getFullYear() - 2026) + " Years";
 
         const monthlyGreetings = {
             0: ["Happy Monthsary, my baby! iloveyousomuch! ❄️", "Ikaw ang pinakamagandang panimula ng taon ko, baby. Cheers to a lifetime of Januarys with you!"],
@@ -539,15 +533,21 @@
             11: ["Happy Monthsary, baby! iloveyousomuch! 🎄", "Ikaw ang pinaka-special na regalo na natanggap ko. I love you more than all the Christmas lights in the world, my darling."]
         };
 
+        let timeGreeting = "A special gift for a special girl...";
+        if (curH >= 5 && curH < 12) timeGreeting = "Good morning, my sweet baby! ☀️";
+        else if (curH >= 12 && curH < 17) timeGreeting = "Good afternoon, my beautiful baby! 🌸";
+        else if (curH >= 17 && curH < 21) timeGreeting = "Good evening, my darling baby! ✨";
+        else timeGreeting = "Late night thoughts? I love you so much. 🌙";
+
         let messages = [
-            { t: 0, m: "A special gift for a special girl..." },
-            { t: 3, m: "You make my heart skip a beat every day." },
-            { t: 7, m: "Thank you for being the person who makes me smile without even trying." },
+            { t: 0, m: timeGreeting },
+            { t: 4, m: "You make my heart skip a beat every day." },
+            { t: 8, m: "Thank you for making me smile without even trying." },
             { t: 11, m: "I love you forever and always! — Martel ❤️" }
         ];
 
         if (isAnniv) {
-            messages = [{ t: 0, m: monthlyGreetings[2][0] }, { t: 3, m: monthlyGreetings[2][1] }, { t: 7, m: "You are my forever and my always." }, { t: 11, m: "Happy " + yearText + "! — Martel ❤️" }];
+            messages = [{ t: 0, m: monthlyGreetings[2][0] }, { t: 3, m: monthlyGreetings[2][1] }, { t: 7, m: "You are my forever and my always." }, { t: 11, m: "Happy " + yearText + " Anniversary! — Martel ❤️" }];
         } else if (is13th) {
             messages = [{ t: 0, m: monthlyGreetings[curM][0] }, { t: 3, m: monthlyGreetings[curM][1] }, { t: 7, m: "Every 13th reminds me how lucky I am." }, { t: 11, m: "I love you more each month! — Martel ❤️" }];
         }
@@ -581,8 +581,6 @@ function applyGrowth() {
             starContainer.appendChild(star);
         }
 
-        let starsCaught = 0;
-        let lastStarTime = 0;
 
         function createFallingStar() {
             if (!nightMode) return;
