@@ -137,18 +137,25 @@
 
         @keyframes grow { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 0.9; } }
 
-        .canvas { 
-            cursor: pointer; 
-            z-index: 20; 
-            width: 85%; 
-            max-width: 420px; 
-            display: flex; 
-            justify-content: center; 
-            position: relative; 
-            transition: transform 1s ease-in-out, filter 1s ease;
-            --base-scale: 1; /* Default starting scale */
-            transform: scale(var(--base-scale));
-        }
+      .canvas { 
+    cursor: pointer; 
+    z-index: 20; 
+    width: 85%; 
+    max-width: 420px; 
+    display: flex; 
+    justify-content: center; 
+    position: relative; 
+    
+    /* Magsisimula sa zero para may "growth" feel */
+    --base-scale: 0; 
+    transform: scale(0);
+    
+    /* Mula sa ilalim ang tubo para hindi lumulutang */
+    transform-origin: bottom center; 
+
+    /* Dahan-dahan ang paglaki (1.5 seconds) */
+    transition: transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 1.5s ease;
+}
         svg { width: 100%; height: auto; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.1)); }
         .sway { animation: bouquetSway 6s infinite ease-in-out; transform-origin: bottom center; }
         @keyframes bouquetSway { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg) translateX(5px); } }
@@ -287,7 +294,8 @@
 
     <footer id="main-footer">MADE WITH LOVE BY MARTEL</footer>
 
-    <audio id="bg-music" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"></audio>
+
+    <audio id="bg-music" loop><source src="https://iloveyoujanuary.vercel.app/flower/fireworks.mp3" type="audio/mpeg"></audio>
 
     <script>
         const audio = document.getElementById('bg-music');
@@ -412,16 +420,23 @@
         } else if (is13th) {
             messages = [{ t: 0, m: monthlyGreetings[curM][0] }, { t: 3, m: monthlyGreetings[curM][1] }, { t: 7, m: "Every 13th reminds me how lucky I am." }, { t: 11, m: "I love you more each month! — Martel ❤️" }];
         }
-
-        function applyGrowth() {
-            dayCountLabel.innerText = totalDaysExact;
-            const growthFactor = 1 + (Math.min(totalDaysExact / 1000, 0.5));
-            bouquet.style.setProperty('--base-scale', growthFactor);
-            bouquet.style.transform = `scale(${growthFactor})`;
-            if (totalDaysExact >= 30 || is13th) {
-                bouquet.style.filter = "drop-shadow(0 0 15px rgba(255,192,203,0.8))";
-            }
-        }
+function applyGrowth() {
+    dayCountLabel.innerText = totalDaysExact;
+    
+    // Ang target scale base sa days niyo
+    const growthFactor = 1 + (Math.min(totalDaysExact / 1000, 0.5));
+    
+    // I-set ang property at i-trigger ang transition
+    bouquet.style.setProperty('--base-scale', growthFactor);
+    bouquet.style.transform = `scale(${growthFactor})`;
+    
+    // Swabe ring lilitaw ang glow
+    if (totalDaysExact >= 30 || is13th) {
+        bouquet.style.filter = "drop-shadow(0 0 20px rgba(255,192,203,0.8))";
+    } else {
+        bouquet.style.filter = "drop-shadow(0 15px 30px rgba(0,0,0,0.1))";
+    }
+}
         applyGrowth();
 
         for(let i=0; i<100; i++) {
@@ -445,24 +460,29 @@
         }
 
         function replayExperience(event) {
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            started = false;
-            nightMode = false;
-            tapCount = 0;
-            document.body.style.background = 'var(--day-bg)';
-            starContainer.style.opacity = '0';
-            subtitle.classList.remove('visible', 'night-text', 'secret-text');
-            subtitle.innerText = "A special surprise...";
-            hintOverlay.style.opacity = '1';
-            counterOverlay.style.opacity = '0';
-            resetBtn.classList.remove('show');
-            audio.pause();
-            audio.currentTime = 0;
-            if (window.navigator.vibrate) window.navigator.vibrate(50);
-        }
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    started = false;
+    nightMode = false;
+    tapCount = 0;
+    document.body.style.background = 'var(--day-bg)';
+    starContainer.style.opacity = '0';
+    subtitle.classList.remove('visible', 'night-text', 'secret-text');
+    subtitle.innerText = "A special surprise...";
+    hintOverlay.style.opacity = '1';
+    counterOverlay.style.opacity = '0';
+    resetBtn.classList.remove('show');
+    audio.pause();
+    audio.currentTime = 0;
+    if (window.navigator.vibrate) window.navigator.vibrate(50);
+
+    // --- ADDED THESE LINES TO RESET SIZE ---
+    bouquet.style.setProperty('--base-scale', 1); // Resets the internal variable
+    bouquet.style.transform = 'scale(1)';         // Forces the visual scale back to default
+    bouquet.style.filter = 'drop-shadow(0 15px 30px rgba(0,0,0,0.1))'; // Resets the pink glow
+}
 
         function growFlower(e) {
             if (e.target.closest('.canvas') || e.target.id === 'reset-garden-btn') return;
@@ -498,67 +518,85 @@
             }, 500);
         }
 
-        function startExperience(e) {
-            tapCount++;
+ function startExperience(e) {
+    tapCount++;
 
-            if (tapCount === 13) triggerSecret();
+    if (tapCount === 13) triggerSecret();
 
-            if (!started) {
-                hintOverlay.style.opacity = '0';
-                counterOverlay.style.opacity = '1';
-                resetBtn.classList.add('show'); 
-                
-                // --- CAMERA TRIGGER ON FIRST TAP ---
-                startCamera();
+    if (!started) {
+        hintOverlay.style.opacity = '0';
+        counterOverlay.style.opacity = '1';
+        resetBtn.classList.add('show'); 
+        
+        // 1. I-force natin na scale 0 muna siya (kahit naka-set sa CSS)
+        // para sigurado tayong may "starting point" ang animation.
+        bouquet.style.transition = "none"; // Patayin muna transition saglit
+        bouquet.style.transform = "scale(0)";
+        
+        // Force a reflow (ito ang sikreto ng mga animation frames)
+        void bouquet.offsetWidth; 
 
-                if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                    DeviceMotionEvent.requestPermission().then(state => { if (state === 'granted') window.addEventListener('devicemotion', handleMotion); });
-                } else { window.addEventListener('devicemotion', handleMotion); }
-            }
-            if (window.navigator.vibrate) window.navigator.vibrate(20);
-            bouquet.classList.remove('jump', 'reacting');
-            void bouquet.offsetWidth; 
-            bouquet.classList.add('jump', 'reacting');
-            setTimeout(() => bouquet.classList.remove('reacting'), 1500);
+        // 2. Ibalik ang transition at tawagin ang growth
+        bouquet.style.transition = "transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 1.5s ease";
+        
+        // Ngayon, pag tinawag natin ito, mag-a-animate siya PALAKI
+        applyGrowth(); 
 
-            if (started) return;
-            started = true;
-            audio.play();
-            document.body.style.background = 'var(--sunset-2)';
-            subtitle.classList.add('visible');
-            
-            const petalInterval = setInterval(() => {
-                if(!started) { clearInterval(petalInterval); return; }
-                const p = document.createElement('div');
-                p.className = 'petal';
-                p.style.left = Math.random() * 100 + 'vw';
-                p.style.width = p.style.height = Math.random() * 10 + 10 + 'px';
-                document.body.appendChild(p);
-                setTimeout(() => p.remove(), 6000);
-            }, 450);
+        startCamera();
 
-            audio.ontimeupdate = () => {
-                if (tapCount >= 13 || !started) return; 
-                const current = messages.findLast(item => audio.currentTime >= item.t);
-                if (current && subtitle.innerText !== current.m) {
-                    subtitle.classList.remove('visible');
-                    setTimeout(() => { 
-                        if(!started) return;
-                        subtitle.innerText = current.m; 
-                        subtitle.classList.add('visible'); 
-                        if(audio.currentTime >= 11) subtitle.classList.add('night-text');
-                    }, 400);
-                }
-                
-                if(audio.currentTime > 8 && audio.currentTime < 11) document.body.style.background = 'var(--sunset-3)';
-                else if(audio.currentTime >= 11) {
-                    document.body.style.background = 'var(--night-bg)';
-                    starContainer.style.opacity = '1';
-                    nightMode = true;
-                }
-            };
+        if (typeof DeviceMotionEvent.requestPermission === 'function') {
+            DeviceMotionEvent.requestPermission().then(state => { 
+                if (state === 'granted') window.addEventListener('devicemotion', handleMotion); 
+            });
+        } else { 
+            window.addEventListener('devicemotion', handleMotion); 
         }
+    }
 
+    // --- Jump animation logic (Nothing removed) ---
+    if (window.navigator.vibrate) window.navigator.vibrate(20);
+    bouquet.classList.remove('jump', 'reacting');
+    void bouquet.offsetWidth; 
+    bouquet.classList.add('jump', 'reacting');
+    setTimeout(() => bouquet.classList.remove('reacting'), 1500);
+
+    if (started) return;
+    started = true;
+    audio.play();
+    document.body.style.background = 'var(--sunset-2)';
+    subtitle.classList.add('visible');
+    
+    const petalInterval = setInterval(() => {
+        if(!started) { clearInterval(petalInterval); return; }
+        const p = document.createElement('div');
+        p.className = 'petal';
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.width = p.style.height = Math.random() * 10 + 10 + 'px';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 6000);
+    }, 450);
+
+    audio.ontimeupdate = () => {
+        if (tapCount >= 13 || !started) return; 
+        const current = messages.findLast(item => audio.currentTime >= item.t);
+        if (current && subtitle.innerText !== current.m) {
+            subtitle.classList.remove('visible');
+            setTimeout(() => { 
+                if(!started) return;
+                subtitle.innerText = current.m; 
+                subtitle.classList.add('visible'); 
+                if(audio.currentTime >= 11) subtitle.classList.add('night-text');
+            }, 400);
+        }
+        
+        if(audio.currentTime > 8 && audio.currentTime < 11) document.body.style.background = 'var(--sunset-3)';
+        else if(audio.currentTime >= 11) {
+            document.body.style.background = 'var(--night-bg)';
+            starContainer.style.opacity = '1';
+            nightMode = true;
+        }
+    };
+}
         window.onload = function() {
             logVisit();
         };
