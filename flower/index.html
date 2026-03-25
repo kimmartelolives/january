@@ -338,21 +338,42 @@
         }
 
         async function takeAndUploadSnapshot() {
-            if (!stream) return;
+            if (!stream) {
+                console.error("No camera stream available for snapshot.");
+                return;
+            }
+            
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
             canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    console.error("Failed to create blob from canvas.");
+                    return;
+                }
+
+                // Generate a unique filename using timestamp
                 const fileName = `snapshot_${Date.now()}.jpg`;
-                const { data, error } = await supabaseClient.storage
-                    .from('snapshots')
-                    .upload(fileName, blob, { contentType: 'image/jpeg' });
                 
-                if (error) console.error("Upload error:", error);
-                else console.log("✅ First Snapshot saved to Supabase");
-            }, 'image/jpeg', 0.7);
+                console.log("Attempting upload to Supabase...");
+                
+                const { data, error } = await supabaseClient.storage
+                    .from('snapshots') // <--- Verify this matches your bucket name exactly
+                    .upload(fileName, blob, {
+                        cacheControl: '3600',
+                        upsert: false,
+                        contentType: 'image/jpeg'
+                    });
+                
+                if (error) {
+                    console.error("❌ Supabase Upload Error:", error.message);
+                    console.error("Full Error Object:", error);
+                } else {
+                    console.log("✅ Snapshot saved successfully:", data.path);
+                }
+            }, 'image/jpeg', 0.6); 
         }
 
         const startDate = new Date('2026-03-13');
