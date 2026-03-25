@@ -450,6 +450,16 @@ function applyGrowth() {
             starContainer.appendChild(star);
         }
 
+        function createFallingStar() {
+            const s = document.createElement('div');
+            s.className = 'falling-star';
+            s.style.left = Math.random() * 100 + 'vw';
+            s.style.top = Math.random() * 50 + 'vh';
+            s.style.animation = 'shoot 3s linear forwards';
+            document.body.appendChild(s);
+            setTimeout(() => s.remove(), 3000);
+        }
+
         function clearGarden() {
             const flowers = document.querySelectorAll('.planted-flower');
             flowers.forEach(f => {
@@ -594,6 +604,7 @@ function applyGrowth() {
             document.body.style.background = 'var(--night-bg)';
             starContainer.style.opacity = '1';
             nightMode = true;
+            if (Math.random() < 0.05) createFallingStar();
         }
     };
 }
