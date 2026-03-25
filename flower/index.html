@@ -6,10 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Your Garden">
-    
     <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/160/000000/bouquet-emoji.png">
-
-    <title>A Sunset Garden For You</title>
+    <title>A Garden For You</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Quicksand:wght@400;600&display=swap');
 
@@ -17,6 +15,7 @@
             --day-bg: #fff0f3;
             --sunset-2: #ffb5a7;
             --sunset-3: #f08080;
+            --night-bg: #1a1a2e;
             --pink-soft: #ffcad4;
             --lily-petal: #fffcf2;
             --tulip-main: #ff758f;
@@ -24,42 +23,89 @@
             --gold: #ffb703;
         }
 
-        * {
-            -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
-            box-sizing: border-box;
-        }
+        * { -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; box-sizing: border-box; }
 
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background: var(--day-bg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100dvh;
-            width: 100vw;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100dvh; width: 100vw;
             font-family: 'Quicksand', sans-serif;
             overflow: hidden;
-            transition: background 10s ease-in-out;
-            position: fixed; /* Prevents iOS rubber-banding */
+            transition: background 5s ease-in-out;
+            position: fixed;
         }
 
-        /* Blinking Animation */
-        .eye { 
-            fill: #444; 
-            animation: blink 4s infinite; 
-            transform-origin: center;
-            transform-box: fill-box;
+        /* ⏳ Day Counter */
+        #counter-overlay {
+            position: absolute;
+            top: 60px;
+            opacity: 0;
+            transition: opacity 2s ease;
+            text-align: center;
+            z-index: 50;
         }
-        @keyframes blink { 
-            0%, 90%, 100% { transform: scaleY(1); } 
-            95% { transform: scaleY(0.1); } 
+        .counter-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #ff8fa3;
+            margin-bottom: 5px;
+        }
+        .counter-days {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: #c9184a;
         }
 
-        /* Interaction States */
+        /* 💡 Instruction Overlay */
+        #hint-overlay {
+            position: absolute;
+            z-index: 100;
+            text-align: center;
+            pointer-events: none;
+            transition: opacity 1s ease;
+        }
+        .hint-text {
+            font-size: 1.1rem;
+            color: #c9184a;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            animation: pulseHint 2s infinite ease-in-out;
+        }
+        @keyframes pulseHint {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.05); }
+        }
+        .hint-icon { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+
+        /* Starry Sky */
+        #stars-container {
+            position: absolute; width: 100%; height: 100%;
+            top: 0; left: 0; opacity: 0;
+            transition: opacity 3s ease;
+            pointer-events: none;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle var(--d) infinite ease-in-out;
+        }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
+
+        .falling-star {
+            position: absolute; width: 2px; height: 2px;
+            background: linear-gradient(to right, white, transparent);
+            box-shadow: 0 0 5px white; opacity: 0; pointer-events: none;
+        }
+        @keyframes shoot {
+            0% { transform: translateX(0) translateY(0) rotate(-45deg) scaleX(0); opacity: 1; }
+            100% { transform: translateX(-300px) translateY(300px) rotate(-45deg) scaleX(50); opacity: 0; }
+        }
+
+        /* Flower Animations */
+        .eye { fill: #444; animation: blink 4s infinite; transform-origin: center; transform-box: fill-box; }
+        @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
         .blush { fill: #ffb7b2; opacity: 0; transition: opacity 0.3s ease; }
         .reacting .blush { opacity: 0.8; }
         .mouth-smile { display: block; }
@@ -68,55 +114,105 @@
         .reacting .mouth-open { display: block; }
 
         @keyframes happyJump {
-            0% { transform: scale(1); }
-            30% { transform: scale(0.9) translateY(10px); }
-            50% { transform: scale(1.05) translateY(-15px); }
-            100% { transform: scale(1) translateY(0); }
+            0% { transform: scale(var(--base-scale)); }
+            30% { transform: scale(calc(var(--base-scale) * 0.9)) translateY(10px); }
+            50% { transform: scale(calc(var(--base-scale) * 1.05)) translateY(-15px); }
+            100% { transform: scale(var(--base-scale)) translateY(0); }
         }
-        .jump { animation: happyJump 0.5s ease-out; }
+        .jump { animation: happyJump 0.5s ease-out !important; }
 
         #garden-bed { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; }
-        .planted-flower { position: absolute; font-size: 24px; animation: grow 1.2s forwards; }
+        .planted-flower { 
+            position: absolute; 
+            font-size: 24px; 
+            animation: grow 1.2s forwards; 
+            transition: opacity 0.8s ease, transform 0.8s ease; 
+        }
+        .fade-out { opacity: 0 !important; transform: scale(0) translateY(-20px) !important; }
+
         @keyframes grow { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 0.9; } }
 
         .canvas { 
             cursor: pointer; 
             z-index: 20; 
-            width: 85%;
-            max-width: 420px;
-            display: flex;
-            justify-content: center;
+            width: 85%; 
+            max-width: 420px; 
+            display: flex; 
+            justify-content: center; 
+            position: relative; 
+            transition: transform 1s ease-in-out, filter 1s ease;
+            --base-scale: 1; /* Default starting scale */
+            transform: scale(var(--base-scale));
         }
         svg { width: 100%; height: auto; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.1)); }
-
         .sway { animation: bouquetSway 6s infinite ease-in-out; transform-origin: bottom center; }
         @keyframes bouquetSway { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg) translateX(5px); } }
 
-        #text-overlay { 
-            margin-top: 20px; 
-            text-align: center; 
-            height: 120px; 
-            z-index: 30; 
-            width: 90%;
-            padding: 0 10px;
-        }
-        #subtitle { 
-            font-family: 'Dancing Script', cursive; 
-            font-size: 1.8rem; 
-            color: #c9184a; 
-            opacity: 0; 
-            transition: 0.8s; 
-            line-height: 1.2;
-        }
-
+        #text-overlay { margin-top: 20px; text-align: center; height: 120px; z-index: 30; width: 90%; }
+        #subtitle { font-family: 'Dancing Script', cursive; font-size: 1.8rem; color: #c9184a; opacity: 0; transition: 0.8s; line-height: 1.2; }
+        .night-text { color: #ffafcc !important; text-shadow: 0 0 10px rgba(255,175,204,0.5); }
+        .secret-text { color: var(--gold) !important; font-size: 2.1rem !important; text-shadow: 0 0 15px var(--gold); }
         .visible { opacity: 1 !important; }
 
         .petal { position: absolute; background: var(--pink-soft); border-radius: 150% 0 150% 0; opacity: 0.6; animation: fall 6s linear forwards; }
         @keyframes fall { 0% { transform: translateY(-10vh); opacity: 0; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
+
+        /* 🧹 Replay Button Styling */
+        #reset-garden-btn {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 9999; /* Ensure it's on top */
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            pointer-events: auto !important;
+        }
+        #reset-garden-btn.show { opacity: 1; transform: scale(1); }
+        #reset-garden-btn:active { transform: scale(0.85); background: rgba(255, 255, 255, 0.5); }
+
+        /* ❤️ Footer Styling */
+        footer {
+            position: absolute;
+            bottom: 15px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #ff8fa3;
+            letter-spacing: 1px;
+            opacity: 0.6;
+            z-index: 10;
+            pointer-events: none;
+            transition: color 5s ease;
+        }
+        .night-footer { color: #ffafcc !important; opacity: 0.4; }
     </style>
 </head>
 <body onclick="growFlower(event)">
 
+    <div id="counter-overlay">
+        <div class="counter-label">Days of Loving You</div>
+        <div class="counter-days" id="day-count">0</div>
+    </div>
+
+    <div id="hint-overlay">
+        <span class="hint-icon">💗</span>
+        <div class="hint-text">Tap to Bloom<br><span style="font-size: 0.6rem;">Shake to Clear Garden</span></div>
+    </div>
+
+    <div id="stars-container"></div>
     <div id="garden-bed"></div>
 
     <div class="canvas sway" id="bouquet" onclick="startExperience(event)">
@@ -135,22 +231,15 @@
             <g stroke="var(--leaf-dark)" stroke-width="2.5" fill="none" stroke-linecap="round">
                 <path d="M120,320 L40,140" /><path d="M120,320 L80,120" /><path d="M120,320 L120,100" /><path d="M120,320 L160,120" /><path d="M120,320 L200,140" />
             </g>
-
             <path d="M120,320 L10,160 Q120,80 230,160 Z" fill="white" opacity="0.4" />
 
             <g transform="translate(65, 135) rotate(-15) scale(0.8)">
                 <path fill="var(--lily-petal)" d="M0,-25 C15,-20 25,10 0,30 C-25,10 -15,-20 0,-25" />
-                <circle fill="#fee440" cx="0" cy="5" r="4"/>
-                <circle class="blush" cx="-8" cy="8" r="4" /><circle class="blush" cx="8" cy="8" r="4" />
-                <circle class="eye" cx="-3" cy="3" r="1.5"/><circle class="eye" cx="3" cy="3" r="1.5"/>
-                <circle class="mouth-open" cx="0" cy="6" r="1.5" />
+                <circle fill="#fee440" cx="0" cy="5" r="4"/><circle class="blush" cx="-8" cy="8" r="4" /><circle class="blush" cx="8" cy="8" r="4" /><circle class="eye" cx="-3" cy="3" r="1.5"/><circle class="eye" cx="3" cy="3" r="1.5"/><circle class="mouth-open" cx="0" cy="6" r="1.5" />
             </g>
             <g transform="translate(175, 120) rotate(10) scale(0.7)">
                 <path fill="var(--lily-petal)" d="M0,-25 C15,-20 25,10 0,30 C-25,10 -15,-20 0,-25" />
-                <circle fill="#fee440" cx="0" cy="5" r="4"/>
-                <circle class="blush" cx="-8" cy="8" r="4" /><circle class="blush" cx="8" cy="8" r="4" />
-                <circle class="eye" cx="-3" cy="3" r="1.5"/><circle class="eye" cx="3" cy="3" r="1.5"/>
-                <circle class="mouth-open" cx="0" cy="6" r="1.2" />
+                <circle fill="#fee440" cx="0" cy="5" r="4"/><circle class="blush" cx="-8" cy="8" r="4" /><circle class="blush" cx="8" cy="8" r="4" /><circle class="eye" cx="-3" cy="3" r="1.5"/><circle class="eye" cx="3" cy="3" r="1.5"/><circle class="mouth-open" cx="0" cy="6" r="1.2" />
             </g>
             <g transform="translate(185, 165) rotate(20) scale(0.85)">
                 <path fill="var(--tulip-main)" d="M-15,-20 Q-15,15 0,15 Q15,15 15,-20 Q0,-10 -15,-20" />
@@ -164,6 +253,7 @@
                 <circle class="eye" cx="-5" cy="-2" r="1.8"/><circle class="eye" cx="5" cy="-2" r="1.8"/>
                 <circle class="mouth-open" cx="0" cy="1" r="1.2" />
             </g>
+
             <g transform="translate(120, 105)">
                 <circle fill="url(#peonyGrad)" cx="0" cy="0" r="40" />
                 <path fill="#ffcad4" opacity="0.6" d="M-28,-18 Q-12,-38 12,-28 Q28,-12 18,12 Q0,28 -22,12 Z" />
@@ -179,7 +269,11 @@
         </svg>
     </div>
 
-    <div id="text-overlay"><div id="subtitle">Tap the bouquet...</div></div>
+    <div id="text-overlay"><div id="subtitle">A special surprise...</div></div>
+
+    <button id="reset-garden-btn" onclick="replayExperience(event)">🔁</button>
+
+    <footer id="main-footer">MADE WITH LOVE BY MARTEL</footer>
 
     <audio id="bg-music" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"></audio>
 
@@ -187,41 +281,199 @@
         const audio = document.getElementById('bg-music');
         const subtitle = document.getElementById('subtitle');
         const bouquet = document.getElementById('bouquet');
+        const starContainer = document.getElementById('stars-container');
+        const hintOverlay = document.getElementById('hint-overlay');
+        const counterOverlay = document.getElementById('counter-overlay');
+        const dayCountLabel = document.getElementById('day-count');
+        const gardenBed = document.getElementById('garden-bed');
+        const resetBtn = document.getElementById('reset-garden-btn');
         let started = false;
+        let nightMode = false;
+        let tapCount = 0;
 
-        const messages = [
-            { t: 0, m: "The sun sets, but my love only grows..." },
-            { t: 3, m: "For the girl who is my sunshine. ☀️" },
-            { t: 7, m: "Every flower here is a thought of you." },
-            { t: 11, m: "I love you to the moon and back! ❤️" }
+        const startDate = new Date('2026-03-13');
+        const today = new Date();
+        const curM = today.getMonth();
+        const is13th = today.getDate() === 13;
+        const isAnniv = is13th && curM === 2;
+
+        const diffTime = Math.abs(today - startDate);
+        const totalDaysExact = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const yearsTogether = today.getFullYear() - 2026;
+        const yearText = yearsTogether === 1 ? "1 Year" : yearsTogether + " Years";
+
+        const monthlyGreetings = {
+            0: ["Happy Monthsary, my baby! iloveyousomuch! ❄️", "Ikaw ang pinakamagandang panimula ng taon ko, baby. Cheers to a lifetime of Januarys with you!"],
+            1: ["Happy Monthsary, my forever babi! iloveyousomuch! 💌", "Will you be my Valentine? Month of love na, pero bawat segundo naman kitang mahal. Iloveyousomuch!"],
+            2: ["Happy Anniversary, my darling! iloveyou always! 🌸", `${totalDaysExact} days of choosing you, and baby, I’d choose you in every lifetime. I love you forever.`],
+            3: ["Happy Monthsary, baby ko! iloveyou beyond words! 🌷", "April fools daw, pero hinding-hindi biro yung pagmamahal ko sa'yo—tapat 'to at sayong-sayo lang. Iloveyou!"],
+            4: ["Happy Monthsary, babu! iloveyousomuch! 🌿", "May na baby! Sa bawat araw na lumilipas, mas lalo mo akong napapa-fall. You are my home and my safe place. Iloveyou!"],
+            5: ["Happy Monthsary! Sana happy ka today baby koo! ☀️", "June na baby ko! Kahit umuulan o bumabagyo, ikaw pa rin ang kaisa-isang sunshine ng buhay ko. I'm so lucky!"],
+            6: ["Happy Monthsary, my one and only baby! ✨", "Hello July, hello sa pinakamagandang babae sa mundo. Kahit gaano karaming bituin, ikaw lang ang nagniningning sa puso ko."],
+            7: ["Happy Monthsary, baby kooo! iloveyousomuch! 🍃", "August is warm, pero mas nakakapag-painit ng puso yung mga yakap at lambing mo. Hinding-hindi ako magsasawa sa'yo."],
+            8: ["Happy Monthsary! I hope napasaya kita today baby! 🍎", "September na baby! Basta kasama kita, kahit saan tayo mapunta, pakiramdam ko kumpleto na ako. I love you so much!"],
+            9: ["Happy Monthsary, baby! iloveyousomuch! 🎃", "October na baby koo. Thank you for being the sweetest treat of my life. Wala nang hihigit pa sa'yo, my bff! my lover! my baby!"],
+            10: ["Happy Monthsary! Sana happy ka always baby koo! 🍂", "November na baby... patay na patay talaga ako sa'yo. Thank you for staying and for loving me. I am yours forever."],
+            11: ["Happy Monthsary, baby! iloveyousomuch! 🎄", "Ikaw ang pinaka-special na regalo na natanggap ko. I love you more than all the Christmas lights in the world, my darling."]
+        };
+
+        let messages = [
+            { t: 0, m: "A special gift for a special girl..." },
+            { t: 3, m: "You make my heart skip a beat every day." },
+            { t: 7, m: "Thank you for being my sunshine." },
+            { t: 11, m: "I love you forever and always! — Martel ❤️" }
         ];
 
+        if (isAnniv) {
+            messages = [
+                { t: 0, m: monthlyGreetings[2][0] },
+                { t: 3, m: monthlyGreetings[2][1] },
+                { t: 7, m: "You are my forever and my always." },
+                { t: 11, m: "Happy " + yearText + "! — Martel ❤️" }
+            ];
+        } else if (is13th) {
+            messages = [
+                { t: 0, m: monthlyGreetings[curM][0] },
+                { t: 3, m: monthlyGreetings[curM][1] },
+                { t: 7, m: "Every 13th reminds me how lucky I am." },
+                { t: 11, m: "I love you more each month! — Martel ❤️" }
+            ];
+        }
+
+        function applyGrowth() {
+            dayCountLabel.innerText = totalDaysExact;
+            const growthFactor = 1 + (Math.min(totalDaysExact / 1000, 0.5));
+            bouquet.style.setProperty('--base-scale', growthFactor);
+            bouquet.style.transform = `scale(${growthFactor})`;
+            if (totalDaysExact >= 30 || is13th) {
+                bouquet.style.filter = "drop-shadow(0 0 15px rgba(255,192,203,0.8))";
+            }
+        }
+        applyGrowth();
+
+        for(let i=0; i<100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 2 + 1 + 'px';
+            star.style.width = size; star.style.height = size;
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.setProperty('--d', Math.random() * 3 + 2 + 's');
+            starContainer.appendChild(star);
+        }
+
+        function clearGarden() {
+            const flowers = document.querySelectorAll('.planted-flower');
+            flowers.forEach(f => {
+                f.classList.add('fade-out');
+                setTimeout(() => f.remove(), 800);
+            });
+            if (window.navigator.vibrate) window.navigator.vibrate([50, 30, 50]);
+        }
+
+        // 🔄 NEW: FULL REPLAY LOGIC
+        function replayExperience(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // 1. Reset all state flags
+            started = false;
+            nightMode = false;
+            tapCount = 0;
+
+            // 2. Clear Garden
+            clearGarden();
+
+            // 3. Reset Visuals to "Day Mode"
+            document.body.style.background = 'var(--day-bg)';
+            starContainer.style.opacity = '0';
+            subtitle.classList.remove('visible', 'night-text', 'secret-text');
+            subtitle.innerText = "A special surprise...";
+            hintOverlay.style.opacity = '1';
+            counterOverlay.style.opacity = '0';
+            resetBtn.classList.remove('show');
+
+            // 4. Reset Audio
+            audio.pause();
+            audio.currentTime = 0;
+
+            if (window.navigator.vibrate) window.navigator.vibrate(50);
+        }
+
+        function handleMotion(event) {
+            let accel = event.accelerationIncludingGravity;
+            if (!accel.x) return;
+            let deltaX = Math.abs(accel.x - lastX);
+            let deltaY = Math.abs(accel.y - lastY);
+            let deltaZ = Math.abs(accel.z - lastZ);
+            if (((deltaX > shakeThreshold) && (deltaY > shakeThreshold)) || 
+                ((deltaX > shakeThreshold) && (deltaZ > shakeThreshold)) || 
+                ((deltaY > shakeThreshold) && (deltaZ > shakeThreshold))) {
+                clearGarden();
+            }
+            lastX = accel.x; lastY = accel.y; lastZ = accel.z;
+        }
+
+        function requestMotionPermission() {
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission()
+                    .then(state => { if (state === 'granted') window.addEventListener('devicemotion', handleMotion); })
+                    .catch(console.error);
+            } else {
+                window.addEventListener('devicemotion', handleMotion);
+            }
+        }
+
         function growFlower(e) {
-            if (e.target.closest('.canvas')) return;
+            if (e.target.closest('.canvas') || e.target.id === 'reset-garden-btn') return;
+            if (window.navigator.vibrate) window.navigator.vibrate(10);
             const flower = document.createElement('div');
             flower.className = 'planted-flower';
             const types = ['🌸', '🌷', '🌹', '💖', '✨', '🌼'];
             flower.innerText = types[Math.floor(Math.random() * types.length)];
-            flower.style.left = e.clientX + 'px';
-            flower.style.top = e.clientY + 'px';
-            document.getElementById('garden-bed').appendChild(flower);
-            setTimeout(() => flower.remove(), 3000);
+            flower.style.left = (e.clientX - 12) + 'px';
+            flower.style.top = (e.clientY - 12) + 'px';
+            gardenBed.appendChild(flower);
         }
 
-        function createPetal() {
-            const p = document.createElement('div');
-            p.className = 'petal';
-            p.style.left = Math.random() * 100 + 'vw';
-            p.style.width = p.style.height = Math.random() * 10 + 10 + 'px';
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 6000);
+        function triggerSecret() {
+            subtitle.classList.remove('visible');
+            setTimeout(() => {
+                subtitle.innerText = "I will love you until my last breath. ❤️";
+                subtitle.classList.add('visible', 'secret-text');
+                for(let i=0; i<30; i++) {
+                    setTimeout(() => {
+                        const heart = document.createElement('div');
+                        heart.className = 'planted-flower';
+                        heart.innerText = '💖';
+                        heart.style.left = Math.random() * 90 + 'vw';
+                        heart.style.top = Math.random() * 90 + 'vh';
+                        gardenBed.appendChild(heart);
+                    }, i * 100);
+                }
+                setTimeout(() => {
+                    subtitle.classList.remove('secret-text');
+                    tapCount = 0;
+                }, 6000);
+            }, 500);
         }
 
         function startExperience(e) {
+            tapCount++;
+            if (tapCount === 13) triggerSecret();
+
+            if (!started) {
+                hintOverlay.style.opacity = '0';
+                counterOverlay.style.opacity = '1';
+                resetBtn.classList.add('show'); 
+                requestMotionPermission();
+            }
+            if (window.navigator.vibrate) window.navigator.vibrate(20);
             bouquet.classList.remove('jump', 'reacting');
             void bouquet.offsetWidth; 
             bouquet.classList.add('jump', 'reacting');
-
             setTimeout(() => bouquet.classList.remove('reacting'), 1500);
 
             if (started) return;
@@ -229,18 +481,40 @@
             audio.play();
             document.body.style.background = 'var(--sunset-2)';
             subtitle.classList.add('visible');
-            setInterval(createPetal, 450);
+            
+            // Replay-compatible Interval for petals
+            const petalInterval = setInterval(() => {
+                if(!started) { clearInterval(petalInterval); return; }
+                const p = document.createElement('div');
+                p.className = 'petal';
+                p.style.left = Math.random() * 100 + 'vw';
+                p.style.width = p.style.height = Math.random() * 10 + 10 + 'px';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 6000);
+            }, 450);
 
             audio.ontimeupdate = () => {
+                if (tapCount >= 13 || !started) return; 
                 const current = messages.findLast(item => audio.currentTime >= item.t);
                 if (current && subtitle.innerText !== current.m) {
                     subtitle.classList.remove('visible');
                     setTimeout(() => { 
+                        if(!started) return;
                         subtitle.innerText = current.m; 
                         subtitle.classList.add('visible'); 
+                        if(audio.currentTime >= 11) {
+                            subtitle.classList.add('night-text');
+                        }
                     }, 400);
                 }
-                if(audio.currentTime > 8) document.body.style.background = 'var(--sunset-3)';
+                
+                if(audio.currentTime > 8 && audio.currentTime < 11) {
+                    document.body.style.background = 'var(--sunset-3)';
+                } else if(audio.currentTime >= 11) {
+                    document.body.style.background = 'var(--night-bg)';
+                    starContainer.style.opacity = '1';
+                    nightMode = true;
+                }
             };
         }
     </script>
