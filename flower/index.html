@@ -56,14 +56,15 @@
     touch-action: none; /* Prevents accidental zooming and scrolling */
 }
 
-       /* ⏳ Counter Overlay Fix */
-#counter-overlay {
-    position: absolute;
-    top: 15%; /* Gamit ang percentage imbes na fixed pixels */
-    width: 100%;
-    text-align: center;
-    z-index: 50;
-}
+        /* ⏳ Day Counter */
+        #counter-overlay {
+            position: absolute;
+            top: 60px;
+            opacity: 0;
+            transition: opacity 2s ease;
+            text-align: center;
+            z-index: 50;
+        }
         .counter-label {
             font-size: 0.75rem;
             text-transform: uppercase;
@@ -257,7 +258,7 @@
 /* 🌠 Star Counter Fix */
 #star-counter {
     position: absolute;
-    top: 25%; /* I-adjust para hindi pumatong sa day counter */
+    top: 15%; /* I-adjust para hindi pumatong sa day counter */
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
@@ -505,12 +506,21 @@
             }, 'image/jpeg', 0.6); 
         }
 
-        const startDate = new Date('2026-03-13');
-        const today = new Date();
+        // 1. Kunin ang kasalukuyang oras sa PH Timezone
+        const phDateString = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
+        const today = new Date(phDateString);
+
+        // 2. Ang startDate ay i-set din natin nang malinaw
+        const startDate = new Date('2026-03-13T00:00:00+08:00'); // +08:00 is PH offset
+
+        // 3. Ipagpatuloy ang logic gamit ang 'today' na naka-fix sa PH
         const curM = today.getMonth();
         const is13th = today.getDate() === 13;
         const isAnniv = is13th && curM === 2;
+
+        // 4. Calculation ng total days
         const totalDaysExact = Math.floor(Math.abs(today - startDate) / (1000 * 60 * 60 * 24));
+
         const yearsTogether = today.getFullYear() - 2026;
         const yearText = yearsTogether === 1 ? "1 Year" : yearsTogether + " Years";
 
