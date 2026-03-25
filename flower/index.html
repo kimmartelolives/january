@@ -8,6 +8,7 @@
     <meta name="apple-mobile-web-app-title" content="My Baby January">
     <link rel="apple-touch-icon" href="https://iloveyoujanuary.vercel.app/flower/baby.jpg">
     <link rel="shortcut icon" href="https://iloveyoujanuary.vercel.app/flower/baby.jpg">
+    <link rel="manifest" href="manifest.json">
 
     <title>A Small Surprise For You</title>
     
@@ -506,27 +507,38 @@ function applyGrowth() {
             gardenBed.appendChild(flower);
         }
 
-        function triggerSecret() {
-            subtitle.classList.remove('visible');
+            function triggerSecret() {
+    subtitle.classList.remove('visible');
+    
+    // --- HEARTBEAT HAPTIC LOGIC ---
+    // Pattern: [vibrate, pause, vibrate, pause...]
+    // 100ms vibrate, 100ms pause, 200ms vibrate (ang "lub-dub")
+    if (window.navigator.vibrate) {
+        const heartbeat = [100, 100, 200, 500, 100, 100, 200, 500, 100, 100, 200];
+        window.navigator.vibrate(heartbeat);
+    }
+
+    setTimeout(() => {
+        subtitle.innerText = "I will love you until my last breath. ❤️";
+        subtitle.classList.add('visible', 'secret-text');
+        
+        for(let i=0; i<30; i++) {
             setTimeout(() => {
-                subtitle.innerText = "I will love you until my last breath. ❤️";
-                subtitle.classList.add('visible', 'secret-text');
-                for(let i=0; i<30; i++) {
-                    setTimeout(() => {
-                        const heart = document.createElement('div');
-                        heart.className = 'planted-flower';
-                        heart.innerText = '💖';
-                        heart.style.left = Math.random() * 90 + 'vw';
-                        heart.style.top = Math.random() * 90 + 'vh';
-                        gardenBed.appendChild(heart);
-                    }, i * 100);
-                }
-                setTimeout(() => {
-                    subtitle.classList.remove('secret-text');
-                    tapCount = 0;
-                }, 6000);
-            }, 500);
+                const heart = document.createElement('div');
+                heart.className = 'planted-flower';
+                heart.innerText = '💖';
+                heart.style.left = Math.random() * 90 + 'vw';
+                heart.style.top = Math.random() * 90 + 'vh';
+                gardenBed.appendChild(heart);
+            }, i * 100);
         }
+        
+        setTimeout(() => {
+            subtitle.classList.remove('secret-text');
+            tapCount = 0;
+        }, 6000);
+    }, 500);
+}
 
  function startExperience(e) {
     tapCount++;
@@ -624,6 +636,8 @@ function applyGrowth() {
             lastX = accel.x; lastY = accel.y; lastZ = accel.z;
         }
         let lastX, lastY, lastZ;
+
+
     </script>
 </body>
 </html>
