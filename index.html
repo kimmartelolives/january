@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My January</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Great+Vibes&display=swap" rel="stylesheet">
 
@@ -19,6 +19,12 @@
             --shadow: rgba(0,0,0,0.1);
         }
 
+        /* Prevent gray highlight on tap for iOS */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
         body {
             background-color: var(--bg-color-main);
             background-image: 
@@ -27,7 +33,9 @@
                 radial-gradient(at 0% 80%, rgba(221, 160, 221, 0.4) 0px, transparent 50%),
                 radial-gradient(at 90% 90%, rgba(255, 239, 186, 0.4) 0px, transparent 50%);
             
+            /* Use dvh for iOS to handle address bar height dynamically */
             height: 100vh;
+            height: 100dvh; 
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -65,15 +73,19 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
         }
 
         .envelope-wrapper {
             position: relative;
-            width: 450px; 
-            height: 300px; 
+            width: 90vw; /* Responsive for iPhone */
+            max-width: 450px; 
+            height: 280px; 
             cursor: pointer;
             perspective: 1200px;
             margin-bottom: 20px;
+            /* Improved hardware acceleration for smoother iOS animation */
+            transform: translate3d(0,0,0);
         }
 
         .envelope {
@@ -88,12 +100,12 @@
         .letter {
             position: absolute;
             top: 15px;
-            left: 15px;
-            width: 420px; 
-            height: 270px; 
+            left: 5%;
+            width: 90%; 
+            height: 90%; 
             background: white;
             z-index: 2;
-            padding: 25px;
+            padding: 20px;
             box-sizing: border-box;
             border-radius: 10px;
             transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.8s, box-shadow 0.8s;
@@ -103,6 +115,8 @@
             scrollbar-width: none;
             -ms-overflow-style: none;
             border: 2px solid #fff5f7;
+            /* Better scrolling for iOS */
+            -webkit-overflow-scrolling: touch; 
         }
 
         .letter::-webkit-scrollbar { display: none; }
@@ -116,37 +130,42 @@
         .envelope-wrapper.open .letter h3 { opacity: 1; transform: translateY(0); transition-delay: 0.8s; }
         .envelope-wrapper.open .video-container { opacity: 1; transform: translateY(0); transition-delay: 1.0s; }
         .envelope-wrapper.open .letter p { opacity: 1; transform: translateY(0); transition-delay: 1.2s; }
-        .envelope-wrapper.open .letter { box-shadow: 0 0 30px rgba(255, 143, 171, 0.3); }
+        .envelope-wrapper.open .letter { 
+            box-shadow: 0 0 30px rgba(255, 143, 171, 0.3); 
+            transform: translateY(-180px); /* Adjusted for mobile viewports */
+            z-index: 10;
+        }
 
         .letter h3 { 
             font-family: 'Great Vibes', cursive;
             color: var(--accent-pink); 
-            margin: 15px 0; 
-            font-size: 32px;
+            margin: 10px 0; 
+            font-size: 28px;
             text-align: center;
             font-weight: normal;
         }
 
         .letter p { 
             font-family: 'Dancing Script', cursive;
-            font-size: 19px; 
+            font-size: 18px; 
             color: var(--text-color); 
-            line-height: 1.6; 
-            margin-bottom: 15px; 
+            line-height: 1.5; 
+            margin-bottom: 12px; 
             text-align: center;
         }
 
         /* --- VIDEO CONTAINER WITH SHINE --- */
         .video-container {
-            position: relative; /* Needed for absolute shine overlay */
-            width: 280px;
+            position: relative; 
+            width: 100%;
+            max-width: 280px;
             height: 160px;
             background: #eee;
-            margin: 0 auto 20px auto;
+            margin: 0 auto 15px auto;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 6px 20px var(--shadow);
-            border: 6px solid white; 
+            border: 4px solid white; 
         }
 
         .video-container video {
@@ -156,7 +175,6 @@
             display: block;
         }
 
-        /* THE SHINING EFFECT LAYER */
         .video-shine {
             position: absolute;
             top: 0;
@@ -174,7 +192,6 @@
             pointer-events: none;
         }
 
-        /* Animation triggers when envelope opens */
         .envelope-wrapper.open .video-shine {
             animation: shine 3s infinite;
             animation-delay: 1.5s;
@@ -188,17 +205,25 @@
 
         .front-pocket {
             position: absolute; bottom: 0; width: 0; height: 0;
-            border-left: 225px solid transparent;
-            border-right: 225px solid transparent;
+            border-left: 45vw solid transparent;
+            border-right: 45vw solid transparent;
             border-bottom: 150px solid var(--envelope-white);
             z-index: 4;
+        }
+        
+        /* Media query to fix large screens since pocket uses vw */
+        @media(min-width: 500px) {
+            .front-pocket {
+                border-left-width: 225px;
+                border-right-width: 225px;
+            }
         }
 
         .front-sides {
             position: absolute; bottom: 0; width: 0; height: 0;
             border-top: 150px solid transparent;
             border-bottom: 150px solid transparent;
-            border-left: 225px solid #f8c9dd;
+            border-left: 45vw solid #f8c9dd;
             z-index: 3;
         }
         
@@ -206,14 +231,19 @@
             position: absolute; bottom: 0; right: 0; width: 0; height: 0;
             border-top: 150px solid transparent;
             border-bottom: 150px solid transparent;
-            border-right: 225px solid #f8c9dd;
+            border-right: 45vw solid #f8c9dd;
             z-index: 3;
+        }
+
+        @media(min-width: 500px) {
+            .front-sides { border-left-width: 225px; }
+            .front-sides-right { border-right-width: 225px; }
         }
 
         .flap {
             position: absolute; top: 0; width: 0; height: 0;
-            border-left: 225px solid transparent;
-            border-right: 225px solid transparent;
+            border-left: 45vw solid transparent;
+            border-right: 45vw solid transparent;
             border-top: 160px solid var(--envelope-pink);
             z-index: 5;
             transform-origin: top;
@@ -221,8 +251,15 @@
             filter: drop-shadow(0 4px 4px var(--shadow));
         }
 
+        @media(min-width: 500px) {
+            .flap {
+                border-left-width: 225px;
+                border-right-width: 225px;
+            }
+        }
+
         .heart {
-            position: absolute; top: 125px; left: 195px;
+            position: absolute; top: 125px; left: calc(50% - 30px);
             width: 60px; height: 60px;
             background: var(--accent-pink);
             color: white;
@@ -236,7 +273,7 @@
         @keyframes heart-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
         .envelope-wrapper.open .flap { transform: rotateX(180deg); z-index: 1; }
-        .envelope-wrapper.open .letter { transform: translateY(-200px); z-index: 10; }
+        .envelope-wrapper.open .letter { z-index: 10; }
         .envelope-wrapper.open .heart { opacity: 0; transform: scale(0); }
 
         .instruction {
@@ -250,7 +287,7 @@
 </head>
 <body>
 
-    <audio id="letterMusic" loop>
+    <audio id="letterMusic" loop preload="auto">
         <source src="written.mp3" type="audio/mpeg">
     </audio>
 
@@ -268,7 +305,7 @@
                 <h3>My Baby January, ✨</h3>
                 
                 <div class="video-container">
-                    <video id="letterVideo" loop muted playsinline>
+                    <video id="letterVideo" loop muted playsinline webkit-playsinline preload="auto">
                         <source src="baby.mp4" type="video/mp4">
                     </video>
                     <div class="video-shine"></div>
@@ -300,37 +337,35 @@
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
     async function logVisit() {
-    console.log("🚀 Attempting to log visit...");
-    try {
-        const response = await fetch('https://api.ipify.org?format=json');
-        const data = await response.json();
-        const visitorIp = data.ip;
+        console.log("🚀 Attempting to log visit...");
+        try {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const data = await response.json();
+            const visitorIp = data.ip;
 
-        // --- MANILA TIME STRING ---
-        // This creates "YYYY-MM-DD HH:MM:SS" in Manila time
-        const phTime = new Date().toLocaleString("sv-SE", { 
-            timeZone: "Asia/Manila" 
-        }); 
+            const phTime = new Date().toLocaleString("sv-SE", { 
+                timeZone: "Asia/Manila" 
+            }); 
 
-        const { error } = await supabaseClient
-            .from('visitor_logs')
-            .insert([
-                { 
-                    ip_address: visitorIp, 
-                    user_agent: navigator.userAgent,
-                    created_at: phTime // Sending the raw "sv-SE" string
-                }
-            ]);
+            const { error } = await supabaseClient
+                .from('visitor_logs')
+                .insert([
+                    { 
+                        ip_address: visitorIp, 
+                        user_agent: navigator.userAgent,
+                        created_at: phTime 
+                    }
+                ]);
 
-        if (error) {
-            console.error('❌ Supabase Error:', error.message);
-        } else {
-            console.log('✅ Success! Logged at PH Time:', phTime);
+            if (error) {
+                console.error('❌ Supabase Error:', error.message);
+            } else {
+                console.log('✅ Success! Logged at PH Time:', phTime);
+            }
+        } catch (err) {
+            console.error('❌ Error:', err);
         }
-    } catch (err) {
-        console.error('❌ Error:', err);
     }
-}
 
     // 4. Page Load Actions
     window.onload = function() {
@@ -353,8 +388,9 @@
     envelope.addEventListener('click', function() {
         const isOpen = this.classList.toggle('open');
         if (isOpen) {
-            music.play().catch(e => console.log("Audio blocked"));
-            video.play();
+            // Standard iOS fix: Media must play inside a click event
+            music.play().catch(e => console.log("Audio blocked", e));
+            video.play().catch(e => console.log("Video blocked", e));
         } else {
             music.pause();
             music.currentTime = 0;
