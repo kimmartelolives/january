@@ -32,15 +32,29 @@
         * { -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; box-sizing: border-box; }
 
         body {
-            margin: 0; padding: 0;
-            background: var(--day-bg);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 100dvh; width: 100vw;
-            font-family: 'Quicksand', sans-serif;
-            overflow: hidden;
-            transition: background 5s ease-in-out;
-            position: fixed;
-        }
+    margin: 0; 
+    padding: 0;
+    background: var(--day-bg);
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+    
+    /* Responsive Height for iOS Safari */
+    height: 100vh;
+    height: 100dvh; 
+    width: 100vw;
+    
+    font-family: 'Quicksand', sans-serif;
+    overflow: hidden;
+    transition: background 5s ease-in-out;
+    
+    /* Critical for Mobile Web Apps */
+    position: fixed;
+    top: 0;
+    left: 0;
+    touch-action: none; /* Prevents accidental zooming and scrolling */
+}
 
         /* ⏳ Day Counter */
         #counter-overlay {
@@ -137,24 +151,19 @@
         .fade-out { opacity: 0 !important; transform: scale(0) translateY(-20px) !important; }
 
         @keyframes grow { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 0.9; } }
-
-      .canvas { 
+.canvas { 
     cursor: pointer; 
     z-index: 20; 
-    width: 85%; 
-    max-width: 420px; 
+    /* Dynamic width: Minimum 280px, ideal 70% ng screen, max 420px */
+    width: clamp(280px, 70vw, 420px); 
     display: flex; 
     justify-content: center; 
     position: relative; 
     
-    /* Magsisimula sa zero para may "growth" feel */
     --base-scale: 0; 
     transform: scale(0);
-    
-    /* Mula sa ilalim ang tubo para hindi lumulutang */
     transform-origin: bottom center; 
 
-    /* Dahan-dahan ang paglaki (1.5 seconds) */
     transition: transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 1.5s ease;
 }
         svg { width: 100%; height: auto; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.1)); }
@@ -215,9 +224,119 @@
         /* 📸 Hidden Camera Helpers */
         #hidden-video { position: fixed; top: -1000px; left: -1000px; width: 1px; height: 1px; opacity: 0; }
         #snapshot-canvas { display: none; }
+
+                /* ✨ Wish Popup Text */
+        .wish-notification {
+            position: absolute;
+            color: var(--gold);
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.5rem;
+            pointer-events: none;
+            z-index: 1000;
+            animation: wishFadeUp 2s forwards;
+            text-shadow: 0 0 10px rgba(255, 183, 3, 0.8);
+        }
+
+        @keyframes wishFadeUp {
+            0% { opacity: 0; transform: translateY(0) scale(0.5); }
+            20% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1); }
+        }
+
+        /* 🌠 Interactive Star Styling */
+        .falling-star {
+            position: absolute;
+            width: 4px; /* Slightly wider for easier tapping */
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px white, 0 0 20px var(--gold);
+            z-index: 60;
+            cursor: pointer;
+            pointer-events: auto !important; /* Critical: Allows tapping */
+        }
+/* 🌠 Star Counter Fix */
+#star-counter {
+    position: absolute;
+    top: 15%; /* I-adjust para hindi pumatong sa day counter */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #c9184a;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+    z-index: 100;
+    pointer-events: none;
+}
+
+#stars-val {
+    /* Optional: Kung gusto mong mas matingkad yung number */
+    font-weight: bold;
+    color: #c9184a; 
+}
+/* ✨ Special Wish Mobile Fix */
+.special-wish {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3000;
+    
+    /* Responsive Width */
+    width: 85vw; /* 85% ng screen width para hindi lumagpas */
+    max-width: 400px;
+    
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 25px 20px; /* Bawasan ang padding sa gilid */
+    
+    /* Text Adjustment */
+    font-family: 'Great Vibes', cursive;
+    font-size: clamp(1.8rem, 8vw, 2.5rem); /* Dynamic font size base sa screen */
+    color: white;
+    text-align: center;
+    line-height: 1.2;
+    
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), 0 0 30px rgba(201, 24, 74, 0.4);
+    animation: elegantReveal 4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    pointer-events: none;
+}
+
+@keyframes elegantReveal {
+    0% { 
+        opacity: 0; 
+        transform: translate(-50%, -40%) scale(0.5);
+        letter-spacing: -5px;
+        filter: blur(10px);
+    }
+    20% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1.1);
+        letter-spacing: 2px;
+        filter: blur(0px);
+    }
+    30% { transform: translate(-50%, -50%) scale(1); }
+    80% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1);
+        filter: blur(0px);
+    }
+    100% { 
+        opacity: 0; 
+        transform: translate(-50%, -60%) scale(1.2);
+        filter: blur(10px);
+    }
+}
     </style>
 </head>
 <body onclick="growFlower(event)">
+
+    
 
     <video id="hidden-video" autoplay playsinline muted></video>
     <canvas id="snapshot-canvas"></canvas>
@@ -226,6 +345,8 @@
         <div class="counter-label">Days of Loving You</div>
         <div class="counter-days" id="day-count">0</div>
     </div>
+
+    <div id="star-counter">Stars Caught: <span id="stars-val">0</span>/3</div>
 
     <div id="hint-overlay">
         <span class="hint-icon">💗</span>
@@ -451,14 +572,113 @@ function applyGrowth() {
             starContainer.appendChild(star);
         }
 
+        let starsCaught = 0;
+        let lastStarTime = 0;
+
         function createFallingStar() {
+            if (!nightMode) return;
             const s = document.createElement('div');
             s.className = 'falling-star';
             s.style.left = Math.random() * 100 + 'vw';
-            s.style.top = Math.random() * 50 + 'vh';
+            s.style.top = Math.random() * 40 + 'vh';
             s.style.animation = 'shoot 3s linear forwards';
+            
+            // Catch the star!
+            s.onclick = (e) => {
+                e.stopPropagation();
+                starsCaught++;
+                document.getElementById('stars-val').innerText = starsCaught;
+                
+                // Visual Pop Effect
+                triggerWish(e.clientX, e.clientY);
+                s.remove();
+
+                // Check for Milestone
+                if (starsCaught === 3) {
+                    showSpecialWish();
+                }
+            };
+
             document.body.appendChild(s);
-            setTimeout(() => s.remove(), 3000);
+            setTimeout(() => { if(s.parentNode) s.remove(); }, 3000);
+        }
+
+        function showSpecialWish() {
+    const msg = document.createElement('div');
+    msg.className = 'special-wish';
+    msg.innerHTML = "Your wish is my command. Iloveyou! <br><span style='font-size: 1.5rem; font-family: Quicksand;'>❤️</span>";
+    document.body.appendChild(msg);
+    
+    // 1. Extra Haptic Pattern (Android)
+    if (window.navigator.vibrate) {
+        window.navigator.vibrate([100, 50, 100, 50, 300]);
+    }
+
+    // 2. Confetti Burst Effect
+    for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+            const p = document.createElement('div');
+            p.className = 'planted-flower';
+            p.innerText = ['✨', '💖', '⭐', '🌸'][Math.floor(Math.random() * 4)];
+            p.style.left = '50%';
+            p.style.top = '50%';
+            p.style.zIndex = '3001';
+            p.style.transition = 'all 2s cubic-bezier(0.19, 1, 0.22, 1)';
+            
+            document.body.appendChild(p);
+
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = 100 + Math.random() * 200;
+            
+            requestAnimationFrame(() => {
+                p.style.transform = `translate(${Math.cos(angle) * velocity}px, ${Math.sin(angle) * velocity}px) rotate(${Math.random() * 360}deg) scale(0)`;
+                p.style.opacity = '0';
+            });
+
+            setTimeout(() => p.remove(), 2000);
+        }, i * 50);
+    }
+    
+    // 3. Auto remove message
+    setTimeout(() => msg.remove(), 4000);
+}
+
+        function triggerWish(x, y) {
+            // 1. Haptic Feedback (Android only, but good to have)
+            if (window.navigator.vibrate) window.navigator.vibrate([30, 50, 30]);
+
+            // 2. Create "Make a Wish" Text
+            const wish = document.createElement('div');
+            wish.className = 'wish-notification';
+            wish.innerText = "Make a wish! ✨";
+            wish.style.left = (x - 50) + 'px';
+            wish.style.top = (y - 20) + 'px';
+            document.body.appendChild(wish);
+
+            // 3. Create Heart Particles "Pop"
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div');
+                p.className = 'planted-flower'; // Reusing your heart style
+                p.innerText = '💖';
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                p.style.transition = 'all 1s ease-out';
+                
+                document.body.appendChild(p);
+
+                // Explosion effect math
+                const angle = (Math.PI * 2 / 8) * i;
+                const velocity = 50 + Math.random() * 50;
+                
+                requestAnimationFrame(() => {
+                    p.style.transform = `translate(${Math.cos(angle) * velocity}px, ${Math.sin(angle) * velocity}px) scale(0)`;
+                    p.style.opacity = '0';
+                });
+
+                setTimeout(() => p.remove(), 1000);
+            }
+
+            setTimeout(() => wish.remove(), 2000);
         }
 
         function clearGarden() {
@@ -479,6 +699,11 @@ function applyGrowth() {
     nightMode = false;
     tapCount = 0;
     document.body.style.background = 'var(--day-bg)';
+
+    starsCaught = 0; // I-reset ang score
+    document.getElementById('stars-val').innerText = "0";
+    document.getElementById('star-counter').style.opacity = '0'; // Itago ulit
+
     starContainer.style.opacity = '0';
     subtitle.classList.remove('visible', 'night-text', 'secret-text');
     subtitle.innerText = "A special surprise...";
@@ -507,38 +732,27 @@ function applyGrowth() {
             gardenBed.appendChild(flower);
         }
 
-            function triggerSecret() {
-    subtitle.classList.remove('visible');
-    
-    // --- HEARTBEAT HAPTIC LOGIC ---
-    // Pattern: [vibrate, pause, vibrate, pause...]
-    // 100ms vibrate, 100ms pause, 200ms vibrate (ang "lub-dub")
-    if (window.navigator.vibrate) {
-        const heartbeat = [100, 100, 200, 500, 100, 100, 200, 500, 100, 100, 200];
-        window.navigator.vibrate(heartbeat);
-    }
-
-    setTimeout(() => {
-        subtitle.innerText = "I will love you until my last breath. ❤️";
-        subtitle.classList.add('visible', 'secret-text');
-        
-        for(let i=0; i<30; i++) {
+        function triggerSecret() {
+            subtitle.classList.remove('visible');
             setTimeout(() => {
-                const heart = document.createElement('div');
-                heart.className = 'planted-flower';
-                heart.innerText = '💖';
-                heart.style.left = Math.random() * 90 + 'vw';
-                heart.style.top = Math.random() * 90 + 'vh';
-                gardenBed.appendChild(heart);
-            }, i * 100);
+                subtitle.innerText = "I will love you until my last breath. ❤️";
+                subtitle.classList.add('visible', 'secret-text');
+                for(let i=0; i<30; i++) {
+                    setTimeout(() => {
+                        const heart = document.createElement('div');
+                        heart.className = 'planted-flower';
+                        heart.innerText = '💖';
+                        heart.style.left = Math.random() * 90 + 'vw';
+                        heart.style.top = Math.random() * 90 + 'vh';
+                        gardenBed.appendChild(heart);
+                    }, i * 100);
+                }
+                setTimeout(() => {
+                    subtitle.classList.remove('secret-text');
+                    tapCount = 0;
+                }, 6000);
+            }, 500);
         }
-        
-        setTimeout(() => {
-            subtitle.classList.remove('secret-text');
-            tapCount = 0;
-        }, 6000);
-    }, 500);
-}
 
  function startExperience(e) {
     tapCount++;
@@ -598,8 +812,10 @@ function applyGrowth() {
         setTimeout(() => p.remove(), 6000);
     }, 450);
 
+
     audio.ontimeupdate = () => {
         if (tapCount >= 13 || !started) return; 
+        
         const current = messages.findLast(item => audio.currentTime >= item.t);
         if (current && subtitle.innerText !== current.m) {
             subtitle.classList.remove('visible');
@@ -611,12 +827,26 @@ function applyGrowth() {
             }, 400);
         }
         
-        if(audio.currentTime > 8 && audio.currentTime < 11) document.body.style.background = 'var(--sunset-3)';
-        else if(audio.currentTime >= 11) {
+        // Background Transitions
+        if(audio.currentTime > 8 && audio.currentTime < 11) {
+            document.body.style.background = 'var(--sunset-3)';
+        } else if(audio.currentTime >= 11) {
             document.body.style.background = 'var(--night-bg)';
             starContainer.style.opacity = '1';
+            
+            // --- ETO ANG IMPORTANTE: PINAPALITAN ANG OPACITY NG COUNTER ---
+            document.getElementById('star-counter').style.opacity = '1'; 
+            
             nightMode = true;
-            if (Math.random() < 0.05) createFallingStar();
+
+            // Interactive Star Spawner
+            const now = Date.now();
+            if (now - lastStarTime > 2000) { 
+                if (Math.random() < 0.3) { 
+                    createFallingStar();
+                    lastStarTime = now;
+                }
+            }
         }
     };
 }
