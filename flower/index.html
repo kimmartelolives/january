@@ -56,15 +56,14 @@
     touch-action: none; /* Prevents accidental zooming and scrolling */
 }
 
-        /* ⏳ Day Counter */
-        #counter-overlay {
-            position: absolute;
-            top: 60px;
-            opacity: 0;
-            transition: opacity 2s ease;
-            text-align: center;
-            z-index: 50;
-        }
+       /* ⏳ Counter Overlay Fix */
+#counter-overlay {
+    position: absolute;
+    top: 15%; /* Gamit ang percentage imbes na fixed pixels */
+    width: 100%;
+    text-align: center;
+    z-index: 50;
+}
         .counter-label {
             font-size: 0.75rem;
             text-transform: uppercase;
